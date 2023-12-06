@@ -1,30 +1,27 @@
 pipeline {
     agent any
-
+    tools {
+        maven '3.9.6'
+    }
     stages {
-        stage("CleanUp") {
+        stage('Build') {
             steps {
-                deleteDir()
+                sh 'mvn -B -DskipTests clean package'
             }
         }
-        stage("Build") {
+        stage('Test') {
             steps {
-                echo "Faza Build"
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
             }
         }
-        stage("Deploy") {
+        stage('Deliver') {
             steps {
-                echo "Faza Deploy"
-            }
-        }
-        stage("Test") {
-            steps {
-                echo "Faza Test"
-            }
-        }
-        stage("Release") {
-            steps {
-                echo "Faza Release"
+                sh './jenkins/scripts/deliver.sh'
             }
         }
     }
